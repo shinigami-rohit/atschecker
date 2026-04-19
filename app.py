@@ -6,9 +6,30 @@ app = Flask(__name__)
 def home():
     return "ATS Checker is running successfully 🚀"
 
-@app.route("/test", methods=["GET"])
+@app.route("/test")
 def test():
-    return jsonify({"message": "API working ✅"})
+    return {"message": "API working ✅"}
+
+# NEW ATS ROUTE
+@app.route("/ats", methods=["POST"])
+def ats_score():
+    data = request.get_json()
+
+    resume = data.get("resume", "")
+    job = data.get("job", "")
+
+    # simple matching logic
+    resume_words = set(resume.lower().split())
+    job_words = set(job.lower().split())
+
+    match = resume_words.intersection(job_words)
+
+    score = (len(match) / len(job_words)) * 100 if job_words else 0
+
+    return jsonify({
+        "score": round(score, 2),
+        "matched_words": list(match)
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
